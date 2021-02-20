@@ -1,0 +1,57 @@
+{
+    "variables": {
+        "cpus": "2",
+        "disk_size": "8000",
+        "headless": "false",
+        "iso_checksum": "fb1d253f9c594a7e32418cf43e4b56cf17976ce4fdb6061fdae559b1bd15df11",
+        "iso_checksum_type": "sha256",
+        "memory": "2048",
+        "ssh_timeout": "10m",
+        "iso_url": "http://10.4.0.77:8008/qaops/pfSense-CE-2.4.5-RELEASE-amd64.iso"
+    },
+    "builders": [
+      {
+        "type": "virtualbox-iso",
+        "guest_os_type": "FreeBSD_64",
+        "keep_registered": "true",
+        "iso_url": "{{ user `iso_url` }}",
+        "iso_checksum": "{{user `iso_checksum`}}",
+        "iso_checksum_type": "{{user `iso_checksum_type`}}",
+        "disk_size": "{{user `disk_size`}}",
+        "cpus": "{{user `cpus`}}",
+        "guest_additions_mode": "disable",
+        "headless":  "{{user `headless`}}",
+        "output_directory": "pfsense-2.4.5-pppoe",
+        "vm_name": "pfSense-2.4.5-PPPoE",
+        "http_directory": "http",
+        "boot_wait": "45s",
+        "ssh_timeout": "{{user `ssh_timeout`}}",
+        "ssh_username": "root",
+        "ssh_password": "pfsense",
+        "shutdown_command": "poweroff",
+        "acpi_shutdown": "true",
+        "vboxmanage": [
+          ["modifyvm", "{{.Name}}", "--memory", "2048"],
+          ["modifyvm", "{{.Name}}", "--cpus", "2"],
+          ["modifyvm", "{{.Name}}", "--natnet1", "192.168.1/24"],
+          ["modifyvm", "{{.Name}}", "--nic2", "natnetwork"]
+        ],
+        "boot_command": [
+          "<enter><wait2>",
+          "<enter><wait2>",
+          "<enter><wait2>",
+          "<enter><wait80>",
+          "<enter><wait2><enter><wait120>",
+          "1<enter>n<enter><wait2>em1<enter><wait2>em0<enter><wait2>",
+          "y<enter><wait6><enter><leftCtrlOn>c<leftCtrlOff><enter><wait2>",
+          "14<enter>y<enter><wait5>5<enter><wait2>y<enter>"
+        ]
+      }
+    ],
+  "provisioners": [{
+      "type": "shell",
+      "scripts": [
+          "provisioning/routes.sh"
+      ]
+  }]
+  }

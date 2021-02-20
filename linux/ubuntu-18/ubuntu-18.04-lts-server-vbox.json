@@ -1,0 +1,61 @@
+{
+    "variables": {
+        "cpus": "2",
+        "disk_size": "45000",
+        "headless": "false",
+        "hostname": "server",
+        "iso_checksum_url": "http://10.4.0.77:8008/qaops/sha256sums.txt",
+        "iso_url": "/run/your/storage/data/iso/ubuntu-18.04.4-server-amd64.iso",
+        "memory": "2048",
+        "ssh_fullname": "theqacicd",
+        "ssh_password": "qacicd",
+        "ssh_timeout": "30m",
+        "ssh_username": "qacicd"
+    },
+    "builders": [{
+        "boot_command": [
+            "<esc><esc><enter><wait>",
+            "/install/vmlinuz noapic",
+            " initrd=/install/initrd.gz",
+            " auto=true",
+            " priority=critical",
+            " hostname={{user `hostname`}}",
+            " passwd/user-fullname={{user `ssh_fullname`}}",
+            " passwd/username={{user `ssh_username`}}",
+            " passwd/user-password={{user `ssh_password`}}",
+            " passwd/user-password-again={{user `ssh_password`}}",
+            " preseed/url=http://{{.HTTPIP}}:{{.HTTPPort}}/preseed.cfg",
+            " -- <enter>"
+        ],
+        "boot_wait": "5s",
+        "disk_size": "{{user `disk_size`}}",
+        "guest_additions_mode": "disable",
+        "guest_os_type": "Ubuntu_64",
+        "hard_drive_interface": "sata",
+        "headless": "{{ user `headless`}}",
+        "http_directory": "http",
+        "iso_checksum": "file:{{user `iso_checksum_url`}}",
+        "iso_url": "{{ user `iso_url` }}",
+        "keep_registered": "true",
+        "output_directory": "ubuntu-1804-LTS-server",
+        "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -P now",
+        "ssh_password": "qacicd",
+        "ssh_timeout": "{{ user `ssh_timeout` }}",
+        "ssh_username": "qacicd",
+        "type": "virtualbox-iso",
+        "vboxmanage": [
+            ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
+            ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
+            ["modifyvm", "{{.Name}}", "--audio", "none"],
+            ["modifyvm", "{{.Name}}", "--usb", "off"],
+            ["modifyvm", "{{.Name}}", "--vram", "12"],
+            ["modifyvm", "{{.Name}}", "--vrde", "off"]
+        ],
+        "vm_name": "ubuntu-18.04-LTS-server"
+    }],
+    "provisioners": [{
+        "execute_command": "echo '{{user `ssh_password`}}'|{{.Vars}} sudo -E -S bash '{{.Path}}'",
+        "script": "provisioning/provisioning.sh",
+        "type": "shell"
+    }]
+}

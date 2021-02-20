@@ -1,0 +1,51 @@
+{
+    "variables": {
+        "iso_url": "http://microsofturl/Windows_10_1809_LTSC_EVAL_x64FRE_en-us.iso",
+        "iso_checksum_type": "sha256",
+        "iso_checksum": "668fe1af70c2f7416328aee3a0bb066b12dc6bbd2576f40f812b95741e18bc3a",
+        "autounattend": "autoconfig/Autounattend.xml"
+    },
+    "builders": [{
+        "type": "virtualbox-iso",
+        "output_directory": "win10-build1809/",
+        "guest_os_type": "Windows10_64",
+        "vm_name": "win10-1809",
+        "vboxmanage": [
+            ["modifyvm", "{{.Name}}", "--memory", "4096"],
+            ["modifyvm", "{{.Name}}", "--graphicscontroller", "vboxsvga"],
+            ["modifyvm", "{{.Name}}", "--vram", "128"],
+            ["modifyvm", "{{.Name}}", "--cpus", "2"],
+            ["modifyvm", "{{.Name}}", "--clipboard-mode", "bidirectional"],
+            ["modifyvm", "{{.Name}}", "--draganddrop", "bidirectional"],
+            ["modifyvm", "{{.Name}}", "--audio", "pulse"],
+            ["modifyvm", "{{.Name}}", "--audiocontroller", "hda"]
+        ],
+        "headless": false,
+        "keep_registered": "true",
+        "guest_additions_mode": "attach",
+        "guest_additions_interface": "sata",
+        "hard_drive_interface": "sata",
+        "iso_url": "{{ user `iso_url` }}",
+        "iso_checksum_type": "{{user `iso_checksum_type`}}",
+        "iso_checksum": "{{user `iso_checksum`}}",
+        "communicator": "winrm",
+        "winrm_username": "qacicd",
+        "winrm_password": "qacicd",
+        "winrm_timeout": "1h",
+        "winrm_use_ssl": "true",
+        "winrm_insecure": "true",
+        "winrm_port": "5986",
+        "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"QA is done\"",
+        "shutdown_timeout": "15m",
+        "floppy_files": [
+            "autoconfig/Autounattend.xml",
+            "provisioning/oracle.cer"
+        ]
+    }],
+    "provisioners": [{
+        "type": "powershell",
+        "elevated_user": "qacicd",
+        "elevated_password": "qacicd",
+        "script": "./provisioning/provisioning.ps1"
+    }]
+}

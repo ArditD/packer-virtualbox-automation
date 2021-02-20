@@ -1,0 +1,58 @@
+{
+    "variables": {
+        "cpus": "2",
+        "disk_size": "40000",
+        "headless": "false",
+        "memory": "2048",
+        "iso_checksum": "836ff1a2d4226452d0ab4610d947c0db3e981abd4ee831c4c785a830c8893005",
+        "iso_checksum_type": "sha256",
+        "ssh_timeout": "25m",
+        "iso_url": "http://10.4.0.77:8008/qaops/archlinux-2020.04.01-x86_64.iso",
+        "desktop_choice": "gnome"
+    },
+    "builders": [
+        {
+            "type": "virtualbox-iso",
+            "keep_registered": "true",
+            "iso_url": "{{ user `iso_url` }}",
+            "iso_checksum": "{{user `iso_checksum`}}",
+            "iso_checksum_type": "{{user `iso_checksum_type`}}",
+            "guest_os_type": "ArchLinux_64",
+            "guest_additions_mode": "disable",
+            "http_directory": "http",
+            "vm_name": "archlinux-64bit",
+            "boot_wait": "5s",
+            "output_directory": "archlinux-rolling-64bit",
+            "boot_command": [
+                "<enter><wait25>",
+                "/usr/bin/curl -O http://{{ .HTTPIP }}:{{ .HTTPPort }}/archwith{{user `desktop_choice`}}.sh<enter>",
+                "chmod +x archwith{{user `desktop_choice`}}.sh<enter>",
+                "/usr/bin/bash archwith{{user `desktop_choice`}}.sh<enter>"
+            ],
+            "disk_size": "{{user `disk_size`}}",
+            "hard_drive_interface": "sata",
+            "ssh_username": "qacicd",
+            "ssh_password": "qacicd",
+            "ssh_timeout": "{{ user `ssh_timeout` }}",
+            "shutdown_command": "sudo systemctl poweroff",
+            "headless" : "{{ user `headless`}}",
+            "vboxmanage": [
+                ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
+                ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
+                ["modifyvm", "{{.Name}}", "--graphicscontroller", "vboxsvga"],
+                ["modifyvm", "{{.Name}}", "--vram", "128"],
+                ["modifyvm", "{{.Name}}", "--clipboard-mode", "bidirectional"],
+                ["modifyvm", "{{.Name}}", "--draganddrop", "bidirectional"],
+                ["modifyvm", "{{.Name}}", "--audio", "pulse"],
+                ["modifyvm", "{{.Name}}", "--audiocontroller", "ac97"],
+                ["modifyvm", "{{.Name}}", "--audioout", "on"]
+            ]
+        }],
+    "provisioners": [
+        {
+            "type": "shell",
+            "execute_command": "{{ .Vars }} sudo -S bash '{{ .Path }}'",
+            "script": "provisioning/cleanup.sh"
+        }
+    ]
+}
