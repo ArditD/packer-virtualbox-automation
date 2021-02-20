@@ -1,4 +1,4 @@
-# Packer templates for Windows Server or Desktop, Linux (Arch, Centos 8 , ubuntu 18 / 20) etc.
+# Packer templates for Windows Server or Desktop, Linux (Arch, Centos 8 , ubuntu 18 / 20) and more.
 Since this covers most or all methods of automation installation (kickstart , d-i, or manual / arch linux and Autounattended.xml ) it can be easely expanded.
 It's however all I need at the moment so, not a big deal for me.
 
